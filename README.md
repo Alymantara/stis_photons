@@ -15,9 +15,9 @@ ODELAYTIME help)
 Go directly to [HST Starview](https://starview.stsci.edu/web/). On the left hand
 side, choose >ALL>ENGINEERING. In the search form, choose in the ARchive class:
 ORB, to search for orbital ephemeris. Click search and look for the files that
-contain your observations (every ORB file usually contains three days worth of
+contain your observations (every _ORB_ file usually contains three days worth of
 ephemeris). From the dataset than you retrieve within the HST archive, the one
-we need is the FIT file.
+we need is the _FIT_ file.
 
 ### Correction
 Once in iraf/pyraf, load >stdas/hst_cal/stis. In there, there will be a routine
