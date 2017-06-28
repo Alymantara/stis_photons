@@ -2,27 +2,26 @@ from astropy.io import fits
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import leastsq,newton
-#from numpy.lib.recfunctions import append_fields
 from os import system
 import sys
 
-
-def localise(fln_tag,fln_x1d,fln_dsp,fln_moc,del_slit = 10,del_line = 40,cen_wav = 1400,del_wav = 15,
-             verbose=True, plot_diagnostics=True, output='stis_timetag',clobber=True):
+def localise(fln_tag, fln_x1d, fln_dsp, fln_moc, del_slit = 10, del_line = 40,
+             cen_wav=1400, del_wav = 15, verbose=True, plot_diagnostics=True,
+             output='stis_timetag',clobber=True):
     """Find Perform the best localisation of the slit
     """
 
-    #data = fits.getdata(fln_tag)
     data = fits.open(fln_tag)[1].data
     head = fits.open(fln_tag)[0].header
 
     opt_elem = fits.getval(fln_tag,'OPT_ELEM')
     spec=fits.getdata(fln_x1d)
-    #spec2d=fits.getdata('../spectroscopy/stis/oci802020_x2d.fits')
     wav = fits.getdata(fln_dsp)    ## DSP file
     moc = fits.getdata(fln_moc)	## MOC file
-    minwav, maxwav = fits.getval(fln_tag,'MINWAVE'),fits.getval(fln_tag,'MAXWAVE')
-    moff1,moff2 = fits.getval(fln_tag,'MOFFSET1'),fits.getval(fln_tag,'MOFFSET2')
+    minwav = fits.getval(fln_tag,'MINWAVE')
+    maxwav = fits.getval(fln_tag,'MAXWAVE')
+    moff1 = fits.getval(fln_tag,'MOFFSET1')
+    moff2 = fits.getval(fln_tag,'MOFFSET2')
     a2center = fits.getval(fln_tag,'CENTERA2')
     cen_wav = fits.getval(fln_tag,'CENWAVE')
     ss = (wav['OPT_ELEM'] == opt_elem) * (wav['A2CENTER'] == a2center)
@@ -47,18 +46,19 @@ def localise(fln_tag,fln_x1d,fln_dsp,fln_moc,del_slit = 10,del_line = 40,cen_wav
         Printer('Calculating wavelengths: %5.2f%%'%(float(cc)/float(num_phot)*100))
     wave2=np.array(wave2)
 
-    print( '...Done...')
+    if verbose: print( '...Done...')
     def extract(axis1,axis2,xslit,slit):
         temp = axis2
         cc=0
         for i,j in zip(xslit,slit):
             mm = axis1 == i
             temp[mm] = axis2[mm] - int(j) + 1000
-            Printer('Correcting Pixel values: %5.2f%%'%(float(cc)/len(slit)*100))
+            if verbose:
+                Printer('Correcting Pixel values: %5.2f%%'%(float(cc)/len(slit)*100))
             cc+=1
         return temp
     new_x = extract(data['AXIS1'],data['AXIS2'],xslit[:-1],slit[:-1])
-    print ('...Done...')
+    if verbose: print('...Done...')
 
     ## SAVE NEW FITS FILE
     if clobber: system('rm '+output+'.fits')
@@ -77,8 +77,6 @@ def localise(fln_tag,fln_x1d,fln_dsp,fln_moc,del_slit = 10,del_line = 40,cen_wav
 
     hdu = fits.BinTableHDU.from_columns(c, header=head)
     hdu.writeto(output+'.fits')
-
-
 
     if plot_diagnostics: plotter(output+'.fits',fln_x1d,fln_dsp,fln_moc,
                 del_slit = 10,del_line = 40,cen_wav = 1400,del_wav = 15)
@@ -99,13 +97,15 @@ def plotter(fln_tag,fln_x1d,fln_dsp,fln_moc,del_slit = 10,del_line = 40,
 
     wav = fits.getdata(fln_dsp)    ## DSP file
     moc = fits.getdata(fln_moc)	## MOC file
-    minwav, maxwav = fits.getval(fln_tag,'MINWAVE',1),fits.getval(fln_tag,'MAXWAVE',1)
-    moff1,moff2 = fits.getval(fln_tag,'MOFFSET1',1),fits.getval(fln_tag,'MOFFSET2',1)
+    minwav = fits.getval(fln_tag,'MINWAVE')
+    maxwav = fits.getval(fln_tag,'MAXWAVE')
+    moff1 = fits.getval(fln_tag,'MOFFSET1')
+    moff2 = fits.getval(fln_tag,'MOFFSET2')
     a2center = fits.getval(fln_tag,'CENTERA2',1)
     cen_wav = fits.getval(fln_tag,'CENWAVE',1)
     ss = (wav['OPT_ELEM'] == opt_elem) * (wav['A2CENTER'] == a2center)
     tt = moc['OPT_ELEM'] == opt_elem
-    a = wav['COEFF'][ss] + moc['COEFF1'][tt]*moff1 + moc['COEFF2'][tt]*moff2
+    a = wav['COEFF'][ss] + moc['COEFF1'][tt] * moff1 + moc['COEFF2'][tt] * moff2
     a = a[0]
 
     num_phot = len(data)
@@ -181,10 +181,11 @@ def plotter(fln_tag,fln_x1d,fln_dsp,fln_moc,del_slit = 10,del_line = 40,
     plt.ylabel('Pixel AXIS2')
 
     fig.add_subplot(311)
-    plt.scatter(data_ori['AXIS1'][mask2][mask_ran],data_ori['AXIS2'][mask2][mask_ran],
-                marker='.',s=5,alpha=0.3,color='g')
+    plt.scatter(data_ori['AXIS1'][mask2][mask_ran],
+                data_ori['AXIS2'][mask2][mask_ran],marker='.', s=5,
+                alpha=0.3, color='g')
     plt.draw()
-
+    plt.show()
     plt.tight_layout(h_pad=-3)
     plt.subplots_adjust(top=0.93)
 
