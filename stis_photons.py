@@ -85,6 +85,8 @@ def localise(fln_tag,fln_x1d,fln_dsp,fln_moc,del_slit = 10,del_line = 40,cen_wav
 
 def plotter(fln_tag,fln_x1d,fln_dsp,fln_moc,del_slit = 10,del_line = 40,
             cen_wav = 1400,del_wav = 15):
+    """Documentation coming soon
+    """
     try:
         vlo = fits.getval(fln_tag,'TTYPE5',1)
     except:
@@ -94,7 +96,7 @@ def plotter(fln_tag,fln_x1d,fln_dsp,fln_moc,del_slit = 10,del_line = 40,
     data_ori = fits.getdata(fln_x1d[:-8]+'tag.fits')
     opt_elem = fits.getval(fln_tag,'OPT_ELEM',1)
     spec=fits.getdata(fln_x1d)
-    #spec2d=fits.getdata('../spectroscopy/stis/oci802020_x2d.fits')
+
     wav = fits.getdata(fln_dsp)    ## DSP file
     moc = fits.getdata(fln_moc)	## MOC file
     minwav, maxwav = fits.getval(fln_tag,'MINWAVE',1),fits.getval(fln_tag,'MAXWAVE',1)
@@ -120,10 +122,7 @@ def plotter(fln_tag,fln_x1d,fln_dsp,fln_moc,del_slit = 10,del_line = 40,
 
     H, xedges, yedges = np.histogram2d(data_ori['AXIS1'],data_ori['AXIS2'],
                         bins=(xedges, yedges))
-    #H = np.rot90(H)
-    #H = np.flipud(H)
-    #Hmasked = np.ma.masked_where(H==0,H)
-    #Hmasked = np.ma.masked_where(H==0,H)
+
     im = plt.imshow(np.arcsinh(H.T), interpolation='nearest', origin='low',
                     aspect='auto', extent=[xedges[0], xedges[-1], yedges[0],
                     yedges[-1]],cmap='binary')
@@ -139,9 +138,6 @@ def plotter(fln_tag,fln_x1d,fln_dsp,fln_moc,del_slit = 10,del_line = 40,
     plt.xlim(0,2024)
     plt.xlabel('Pixel AXIS1')
     plt.ylabel('Pixel AXIS2')
-    #stop
-    plt.subplots_adjust(top=0.9)
-
 
     fig.add_subplot(313)
     plt.plot(spec['WAVELENGTH'][0],spec['FLUX'][0],'k')
@@ -152,20 +148,18 @@ def plotter(fln_tag,fln_x1d,fln_dsp,fln_moc,del_slit = 10,del_line = 40,
     plt.axvline(x=cen_wav,color='b',linestyle='--')
     plt.axvline(x=cen_wav+del_wav,color='b',linestyle='--')
     plt.axvline(x=cen_wav-del_wav,color='b',linestyle='--')
-    plt.tight_layout()
-    plt.subplots_adjust(top=0.95)
-    plt.draw()
-    plt.show()
 
     fig.add_subplot(312)
     xedges = np.arange(minwav,maxwav,1.0)
     yedges = np.arange(900,1100,2.0)
 
-    H, xedges, yedges = np.histogram2d(data['WAVELENGTH'],data['AXIS2_X'], bins=(xedges, yedges))
+    H, xedges, yedges = np.histogram2d(data['WAVELENGTH'],data['AXIS2_X'],
+                        bins=(xedges, yedges))
     im = plt.imshow(np.arcsinh(H.T), interpolation='nearest', origin='low',
                     aspect='auto', extent=[xedges[0], xedges[-1], yedges[0],
                     yedges[-1]], cmap='binary')
-    plt.scatter(data['WAVELENGTH'][mask],data['AXIS2_X'][mask],marker='.',s=5,alpha=0.3)
+    plt.scatter(data['WAVELENGTH'][mask],data['AXIS2_X'][mask],marker='.',
+                s=5,alpha=0.3)
     plt.xlim(minwav,maxwav)
     plt.ylim(1000-50,1000+50)
     plt.axvline(x=cen_wav,color='b',linestyle='-')
@@ -185,7 +179,6 @@ def plotter(fln_tag,fln_x1d,fln_dsp,fln_moc,del_slit = 10,del_line = 40,
                 alpha=0.3,color='y')
     plt.xlabel('Wavelength / $\AA$')
     plt.ylabel('Pixel AXIS2')
-    plt.draw()
 
     fig.add_subplot(311)
     plt.scatter(data_ori['AXIS1'][mask2][mask_ran],data_ori['AXIS2'][mask2][mask_ran],
