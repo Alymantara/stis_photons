@@ -21,15 +21,17 @@ we need is the FIT file.
 
 ### Correction
 Once in iraf/pyraf, load >stdas/hst_cal/stis. In there, there will be a routine
-called ODELAYTIME. To correct each _tag.fits_, simply run the routine as an 
+called ODELAYTIME. To correct each _tag.fits_, simply run the routine as an
 example:
 
 ```
 odelay odfa01030_tag.fits obs_ephem=p6d0000r.fit
 ```
-This will overwrite
+This will overwrite the original file (I usually keep a raw copy of these files
+just in case.)
 
-## Example:
+
+## stis_photons example:
 
  ```
  import stis_photons as stis
