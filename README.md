@@ -34,16 +34,17 @@ just in case.)
 ## stis_photons example:
 
  ```
- import stis_photons as stis
+import stis_photons
 
-fln_tag = 'o4oj01c30_tag.fits'	## TAG-TIME file
-fln_x1d = 'o4oj01c30_x1d.fits'	## Spectra associated with TIME-TAG File
+fln_tag = 'o4oj01020_tag.fits'	## TAG-TIME file
+fln_x1d = 'o4oj01020_x1d.fits'	## Spectra associated with TIME-TAG File
 fln_moc = 'h4s1350io_moc.fits'	## MOC file used in the data reduction
 fln_dsp = 'm7p16110o_dsp.fits' ## DSP file used in the data reduction
-output = 'stis_timetag'	## Output numpy and text file
+output = 'stis_timetag20'	## Output numpy and text file
 
-stis.localise(fln_tag,fln_x1d,fln_dsp,fln_moc, output=output, transform = True,
+stis_photons.localise(fln_tag,fln_x1d,fln_dsp,fln_moc, output=output,
               verbose=True, plot_diagnostics=True, del_slit = 10,del_line = 40,
               del_wav = 15)
 
+stis_photons.plotter('stis_timetag.fits',fln_x1d,fln_dsp,fln_moc)
 ```
