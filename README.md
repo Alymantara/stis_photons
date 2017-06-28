@@ -45,6 +45,9 @@ output = 'stis_timetag20'	## Output numpy and text file
 stis_photons.localise(fln_tag,fln_x1d,fln_dsp,fln_moc, output=output,
               verbose=True, plot_diagnostics=True, del_slit = 10,del_line = 40,
               del_wav = 15)
-
+```
+If you have already the fits file with wavelengths, you can also plot the 
+diagnostics:
+```
 stis_photons.plotter('stis_timetag.fits',fln_x1d,fln_dsp,fln_moc)
 ```
