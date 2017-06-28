@@ -73,7 +73,7 @@ def localise(fln_tag,fln_x1d,fln_dsp,fln_moc,del_slit = 10,del_line = 40,cen_wav
     c = orig_cols + new_cols
 
     head['history'] = 'Assigned wavelengths with stis_photons'
-    head['history'] = 'http://alymantara.github.io'
+    #head['history'] = 'http://alymantara.github.io'
 
     hdu = fits.BinTableHDU.from_columns(c, header=head)
     hdu.writeto(output+'.fits')
