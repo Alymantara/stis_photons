@@ -1,4 +1,4 @@
-# stis_photons
+# stis_photons.py
 Assign wavelengths to HST/STIS TIME_TAG event files
 
 ## Barycentre Photons
@@ -43,10 +43,9 @@ fln_dsp = 'm7p16110o_dsp.fits' ## DSP file used in the data reduction
 output = 'stis_timetag20'	## Output numpy and text file
 
 stis_photons.localise(fln_tag,fln_x1d,fln_dsp,fln_moc, output=output,
-              verbose=True, plot_diagnostics=True, del_slit = 10,del_line = 40,
-              del_wav = 15)
+              verbose=True, plot_diagnostics=False)
 ```
-If you have already the fits file with wavelengths, you can also plot the 
+If you have already the fits file with wavelengths, you can also plot the
 diagnostics:
 ```
 stis_photons.plotter('stis_timetag.fits',fln_x1d,fln_dsp,fln_moc)

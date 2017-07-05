@@ -5,10 +5,48 @@ from scipy.optimize import leastsq,newton
 from os import system
 import sys
 
-def localise(fln_tag, fln_x1d, fln_dsp, fln_moc, del_slit = 10, del_line = 40,
-             cen_wav=1400, del_wav = 15, verbose=True, plot_diagnostics=True,
-             output='stis_timetag',clobber=True):
-    """Find Perform the best localisation of the slit
+def localise(fln_tag, fln_x1d, fln_dsp, fln_moc, verbose=True,
+             output='stis_timetag',clobber=True, plot_diagnostics=True):
+    """
+    Performs the localisation of the slit and shifts the photons so slit is
+    parallel. Assigns wavelegnth to every photon in the file. Finally, exports
+    the new positions of every photon AXIS_2 and WAVELENGTH as new columns in
+    the output FITS file. This output file retains all other HDUs of the
+    original (including headers and GTI).
+
+    Parameters
+    ----------
+    fln_tag : str
+        Filename of STIS TIME-TAG data - *tag.fits
+    fln_x1d : str
+        Filename of processed STIS 1D flux calibrated spectrum - *x1d.fits
+    fln_dsp : str
+        Filename of reference file for wavelength dispersion calibration for
+        STIS - *dsp.fits
+    fln_moc : dict
+        Filename of reference file for wavelength dispersion calibration for
+        STIS - *moc.fits
+    verbose : bool (optional)
+        Print to screen progress of the routine
+    output  : str (optional)
+        Filename for the output FITS file
+    clobber : bool (optional)
+        If True, will replace existing file named as the output keyword
+    plot_diagnostics : bool (optional)
+        Plot the diagnostics of extraction and wavelength assignment
+
+    Example
+    ----------
+    import stis_photons
+
+    fln_tag = 'o4oj01020_tag.fits'	## TAG-TIME file
+    fln_x1d = 'o4oj01020_x1d.fits'	## Spectra associated with TIME-TAG File
+    fln_moc = 'h4s1350io_moc.fits'	## MOC file used in the data reduction
+    fln_dsp = 'm7p16110o_dsp.fits' ## DSP file used in the data reduction
+    output = 'stis_timetag20'	## Output numpy and text file
+
+    stis_photons.localise(fln_tag,fln_x1d,fln_dsp,fln_moc, output=output,
+                          verbose=True, plot_diagnostics=True)
     """
 
     data = fits.open(fln_tag)[1].data
@@ -72,7 +110,7 @@ def localise(fln_tag, fln_x1d, fln_dsp, fln_moc, del_slit = 10, del_line = 40,
     new_cols = fits.ColDefs(cols)
     c = orig_cols + new_cols
 
-    head['HISTORY'] = 'Assigned wavelengths with stis_photons'
+    head['HISTORY'] = 'Assigned wavelengths with stis_photons.py'
     #head['history'] = 'http://alymantara.github.io'
 
     #hdu = fits.BinTableHDU.from_columns(c, header=head)
@@ -84,12 +122,32 @@ def localise(fln_tag, fln_x1d, fln_dsp, fln_moc, del_slit = 10, del_line = 40,
     new_hdul.append(fits.BinTableHDU(fits.open(fln_tag)[2].data, header=fits.open(fln_tag)[2].header, name='GTI'))
     new_hdul.writeto(output+'.fits', clobber=clobber)
 
-    if plot_diagnostics: plotter(output+'.fits',fln_x1d,fln_dsp,fln_moc,
-                del_slit = 10,del_line = 40,cen_wav = 1400,del_wav = 15)
+    if plot_diagnostics: plotter(output+'.fits',fln_x1d,fln_dsp,fln_moc)
 
-def plotter(fln_tag,fln_x1d,fln_dsp,fln_moc,del_slit = 10,del_line = 40,
-            cen_wav = 1400,del_wav = 15):
-    """Documentation coming soon
+def plotter(fln_tag,fln_x1d,fln_dsp,fln_moc,del_slit=10):
+    """
+    Constructs the diagnostic plots from a processed stis_photons.py file.
+
+    Parameters
+    ----------
+    fln_tag : str
+        Filename of STIS TIME-TAG data - *tag.fits
+    fln_x1d : str
+        Filename of processed STIS 1D flux calibrated spectrum - *x1d.fits
+    fln_dsp : str
+        Filename of reference file for wavelength dispersion calibration for
+        STIS - *dsp.fits
+    fln_moc : dict
+        Filename of reference file for wavelength dispersion calibration for
+        STIS - *moc.fits
+    del_slit : float
+        Half-Width of the slit to extract the photons
+
+    Example
+    ----------
+    import stis_photons
+
+    stis_photons.plotter('stis_timetag.fits',fln_x1d,fln_dsp,fln_moc)
     """
     try:
         vlo = fits.getval(fln_tag,'TTYPE5',1)
@@ -113,7 +171,7 @@ def plotter(fln_tag,fln_x1d,fln_dsp,fln_moc,del_slit = 10,del_line = 40,
     tt = moc['OPT_ELEM'] == opt_elem
     a = wav['COEFF'][ss] + moc['COEFF1'][tt] * moff1 + moc['COEFF2'][tt] * moff2
     a = a[0]
-
+    del_wav = 15
     num_phot = len(data)
     mask = np.random.randint(num_phot,size=int(.1*num_phot))
 
