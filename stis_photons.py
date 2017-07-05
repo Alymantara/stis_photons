@@ -36,19 +36,19 @@ def localise(fln_tag, fln_x1d, fln_dsp, fln_moc, del_slit = 10, del_line = 40,
 
     num_phot = len(data)
     if verbose: print( 'Number of events in file: '+str(num_phot))
-    wave2=[]
+    wave2 = np.zeros(num_phot)
     cc=0
-    for s in data['AXIS1']/2.0:
+    for i,s in enumerate(data['AXIS1']/2.0):
         def disptab(x):
             return a[0]+a[1]*x + a[2]*x**2+a[3] + a[4]*x +a[5]*x +a[6]*x**2-s
-        wave2.append(newton(disptab,cen_wav))
+        wave2[i] = newton(disptab,cen_wav)
         cc+=1
-        Printer('Calculating wavelengths: %5.2f%%'%(float(cc)/float(num_phot)*100))
-    wave2=np.array(wave2)
+        if verbose:
+            Printer('Calculating wavelengths: %5.2f%%'%(float(cc)/float(num_phot)*100))
 
     if verbose: print( '...Done...')
     def extract(axis1,axis2,xslit,slit):
-        temp = axis2
+        temp = np.zeros(axis2.size)
         cc=0
         for i,j in zip(xslit,slit):
             mm = axis1 == i
@@ -61,7 +61,7 @@ def localise(fln_tag, fln_x1d, fln_dsp, fln_moc, del_slit = 10, del_line = 40,
     if verbose: print('...Done...')
 
     ## SAVE NEW FITS FILE
-    if clobber: system('rm '+output+'.fits')
+    #if clobber: system('rm '+output+'.fits')
 
     cols = []
     cols.append(fits.Column(name='WAVELENGTH', format='1E',unit = 'angstrom',
@@ -72,11 +72,17 @@ def localise(fln_tag, fln_x1d, fln_dsp, fln_moc, del_slit = 10, del_line = 40,
     new_cols = fits.ColDefs(cols)
     c = orig_cols + new_cols
 
-    head['history'] = 'Assigned wavelengths with stis_photons'
+    head['HISTORY'] = 'Assigned wavelengths with stis_photons'
     #head['history'] = 'http://alymantara.github.io'
 
-    hdu = fits.BinTableHDU.from_columns(c, header=head)
-    hdu.writeto(output+'.fits')
+    #hdu = fits.BinTableHDU.from_columns(c, header=head)
+    #hdu.writeto()
+
+    new_hdul = fits.HDUList()
+    new_hdul.append(fits.PrimaryHDU(header=head))
+    new_hdul.append(fits.BinTableHDU.from_columns(c, header=fits.open(fln_tag)[1].header, name='DATA'))
+    new_hdul.append(fits.BinTableHDU(fits.open(fln_tag)[2].data, header=fits.open(fln_tag)[2].header, name='GTI'))
+    new_hdul.writeto(output+'.fits', clobber=clobber)
 
     if plot_diagnostics: plotter(output+'.fits',fln_x1d,fln_dsp,fln_moc,
                 del_slit = 10,del_line = 40,cen_wav = 1400,del_wav = 15)
